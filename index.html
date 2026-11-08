@@ -2,96 +2,135 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Чат v3</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>Чат</title>
 <style>
-  :root { --bg:#ffffff; --panel:#f6f6f8; --line:#e4e4ea; --me:#3b3b46; --bot:#f0f0f4; --text:#1c1c22; --muted:#80808e; }
-  * { box-sizing: border-box; }
+  :root { --bg:#ffffff; --panel:#f5f6f8; --line:#e6e7ec; --accent:#4d6bfe; --text:#16171b; --muted:#8a8c98; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; margin: 0; }
-  body { background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, sans-serif; display: flex; flex-direction: column; }
+  body { background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, sans-serif; display: flex; flex-direction: column; height: 100dvh; overflow: hidden; }
+  svg { display: block; }
+  .ic { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-  header { display: flex; gap: 8px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
-  header .title { flex: 1; font-weight: 600; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .iconbtn { width: 38px; height: 38px; background: none; border: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); }
-  .burger { flex-direction: column; gap: 5px; }
-  .burger i { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
+  /* верхняя панель */
+  header { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px 6px; }
+  .circle, .pill button { background: var(--bg); border: 1px solid var(--line); color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .circle { width: 44px; height: 44px; border-radius: 50%; padding: 0; }
+  .pill { display: flex; border: 1px solid var(--line); border-radius: 22px; overflow: hidden; }
+  .pill button { border: 0; width: 48px; height: 42px; border-radius: 0; }
 
-  #log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  /* сообщения */
+  #log { flex: 1; overflow-y: auto; padding: 8px 14px 14px; display: flex; flex-direction: column; gap: 14px; }
   .row { display: flex; gap: 8px; align-items: flex-end; max-width: 92%; }
   .row.user { align-self: flex-end; flex-direction: row-reverse; }
   .row.bot { align-self: flex-start; }
-  .av { width: 32px; height: 32px; border-radius: 50%; background: #d9d9e1; color: #55555f; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex: none; background-size: cover; background-position: center; }
-  .msg { padding: 9px 13px; border-radius: 16px; white-space: pre-wrap; word-wrap: break-word; }
-  .user .msg { background: var(--me); color: #fff; border-bottom-right-radius: 4px; }
-  .bot .msg { background: var(--bot); border-bottom-left-radius: 4px; }
+  .av { width: 32px; height: 32px; border-radius: 50%; background: #dfe1e8; color: #5b5d69; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex: none; background-size: cover; background-position: center; }
+  .msg { padding: 9px 14px; border-radius: 18px; white-space: pre-wrap; word-wrap: break-word; }
+  .user .msg { background: var(--accent); color: #fff; border-bottom-right-radius: 5px; }
+  .bot .msg { background: var(--panel); border-bottom-left-radius: 5px; }
   .sys { align-self: center; color: var(--muted); font-size: 13px; text-align: center; }
 
-  form { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
-  textarea { flex: 1; resize: none; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; font: inherit; max-height: 120px; outline: none; }
-  textarea:focus, input:focus { border-color: #a9a9b8; }
-  button.btn { background: var(--me); color: #fff; border: 0; border-radius: 12px; padding: 0 18px; font: inherit; cursor: pointer; }
-  button.btn:disabled { opacity: .5; }
-  .light { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font: inherit; cursor: pointer; }
+  #hero { flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 0 30px; text-align: center; }
+  #hero.on { display: flex; }
+  #hero .logo { width: 68px; height: 68px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; background-size: cover; background-position: center; }
+  #hero h1 { margin: 0; font-size: 26px; line-height: 1.25; font-weight: 700; }
+
+  /* поле ввода */
+  .composer { margin: 0 12px calc(12px + env(safe-area-inset-bottom)); background: var(--panel); border: 1px solid var(--line); border-radius: 26px; padding: 12px 12px 10px 18px; }
+  .composer textarea { width: 100%; resize: none; background: transparent; color: var(--text); border: 0; outline: none; font: inherit; max-height: 140px; padding: 0; display: block; }
+  .composer .bar { display: flex; justify-content: flex-end; margin-top: 4px; }
+  #send { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  #send:disabled { opacity: .45; }
 
   /* панели */
-  #shade { position: fixed; inset: 0; background: rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  #shade { position: fixed; inset: 0; background: rgba(0,0,0,.28); opacity: 0; pointer-events: none; transition: opacity .2s; }
   #shade.on { opacity: 1; pointer-events: auto; }
-  .drawer { position: fixed; top: 0; bottom: 0; width: min(380px, 90vw); background: var(--bg); display: flex; flex-direction: column; transition: transform .2s; }
-  #chatsPanel { left: 0; border-right: 1px solid var(--line); transform: translateX(-100%); }
-  #setPanel { right: 0; border-left: 1px solid var(--line); transform: translateX(100%); }
-  .drawer.on { transform: none; }
-  .dhead { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; }
-  .close { background: none; border: 0; font-size: 26px; line-height: 1; cursor: pointer; color: var(--text); padding: 0 4px; }
-  .dbody { flex: 1; overflow-y: auto; padding: 8px 16px 24px; }
-  .dbody h4 { margin: 20px 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .drawer { position: fixed; top: 0; bottom: 0; width: min(340px, 88vw); background: var(--bg); display: flex; flex-direction: column; transition: transform .22s; }
+  #chatsPanel { left: 0; transform: translateX(-102%); }
+  #setPanel { right: 0; transform: translateX(102%); width: min(380px, 92vw); }
+  #chatsPanel.on, #setPanel.on { transform: none; }
+  #chatsPanel.on { box-shadow: 6px 0 30px rgba(0,0,0,.08); }
+  #setPanel.on { box-shadow: -6px 0 30px rgba(0,0,0,.08); }
+
+  .search { margin: calc(14px + env(safe-area-inset-top)) 14px 6px; display: flex; align-items: center; gap: 8px; padding: 0 14px; height: 46px; border: 1px solid var(--line); border-radius: 23px; color: var(--muted); }
+  .search input { flex: 1; border: 0; outline: none; background: transparent; font: inherit; color: var(--text); min-width: 0; }
+  #chatList { flex: 1; overflow-y: auto; padding: 4px 14px 10px; }
+  .group { margin: 18px 0 6px; font-size: 15px; color: var(--muted); font-weight: 600; }
+  .chat { display: flex; align-items: center; gap: 6px; padding: 11px 10px; margin: 0 -10px; border-radius: 12px; cursor: pointer; }
+  .chat.cur { background: var(--panel); }
+  .chat .t { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 17px; }
+  .chat .del { background: none; border: 0; color: var(--muted); padding: 6px; cursor: pointer; display: flex; }
+  .noresult { color: var(--muted); padding: 20px 0; text-align: center; font-size: 14px; }
+  .me { display: flex; align-items: center; gap: 12px; padding: 12px 14px calc(14px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); cursor: pointer; }
+  .me .av { width: 40px; height: 40px; font-size: 16px; }
+  .me .n { flex: 1; font-size: 17px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+  .dhead { display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .close { background: none; border: 0; font-size: 28px; line-height: 1; cursor: pointer; color: var(--text); padding: 0 4px; }
+  .dbody { flex: 1; overflow-y: auto; padding: 4px 16px 28px; }
+  .dbody h4 { margin: 22px 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
   .dbody label.l { display: block; margin: 10px 0 4px; font-size: 14px; color: var(--muted); }
-  .dbody input[type=text], .dbody input[type=number] { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font: inherit; }
+  .dbody input[type=text], .dbody input[type=number] { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font: inherit; outline: none; }
   .avrow { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
-  .avrow .av { width: 52px; height: 52px; font-size: 20px; }
+  .avrow .av { width: 54px; height: 54px; font-size: 20px; }
   .avrow input[type=file] { display: none; }
-  .mem { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .light { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px; font: inherit; cursor: pointer; }
+  .mem { display: flex; gap: 8px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid var(--line); }
   .mem span { flex: 1; font-size: 15px; }
-  .mem button, .chat button.del { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; }
+  .mem button { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; }
   .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
-  .newchat { width: 100%; margin: 12px 0 6px; }
-  .chat { display: flex; align-items: center; gap: 6px; padding: 10px 10px; border-radius: 10px; cursor: pointer; }
-  .chat:hover { background: var(--panel); }
-  .chat.cur { background: var(--bot); }
-  .chat .t { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
 
 <header>
-  <button class="iconbtn burger" id="burger" aria-label="Чаты"><i></i><i></i><i></i></button>
-  <div class="title" id="titleBot">Чат v3</div>
-  <button class="iconbtn" id="gear" aria-label="Настройки">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  <button class="circle" id="burger" aria-label="Чаты">
+    <svg width="22" height="22" viewBox="0 0 24 24" class="ic"><path d="M4 8h16M4 16h9"/></svg>
   </button>
+  <div class="pill">
+    <button id="gear" aria-label="Настройки">
+      <svg width="22" height="22" viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+    <button id="newTop" aria-label="Новый чат">
+      <svg width="24" height="24" viewBox="0 0 24 24" class="ic"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+    </button>
+  </div>
 </header>
 
+<div id="hero">
+  <div class="logo" id="heroLogo"></div>
+  <h1>Привет, давайте<br>начнём общение</h1>
+</div>
 <div id="log"></div>
 
-<form id="form">
-  <textarea id="inp" rows="1" placeholder="Сообщение"></textarea>
-  <button type="submit" class="btn" id="send">Отправить</button>
+<form id="form" class="composer">
+  <textarea id="inp" rows="1" placeholder="Напишите сообщение"></textarea>
+  <div class="bar">
+    <button type="submit" id="send" aria-label="Отправить">
+      <svg width="22" height="22" viewBox="0 0 24 24" class="ic" style="stroke-width:2.2"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
+  </div>
 </form>
 
 <div id="shade"></div>
 
-<!-- левая панель: чаты -->
+<!-- левая панель: только чаты -->
 <aside class="drawer" id="chatsPanel">
-  <div class="dhead"><span>Чаты</span><button class="close" data-close aria-label="Закрыть">&times;</button></div>
-  <div class="dbody">
-    <button class="light newchat" id="newChat" type="button">Новый чат</button>
-    <div id="chatList"></div>
+  <div class="search">
+    <svg width="20" height="20" viewBox="0 0 24 24" class="ic"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input type="text" id="q" placeholder="Поиск в содержимом чата...">
+  </div>
+  <div id="chatList"></div>
+  <div class="me" id="meRow">
+    <div class="av" id="meAv"></div>
+    <div class="n" id="meName"></div>
   </div>
 </aside>
 
 <!-- правая панель: настройки -->
 <aside class="drawer" id="setPanel">
-  <div class="dhead"><span>Настройки</span><button class="close" data-close aria-label="Закрыть">&times;</button></div>
+  <div class="dhead"><span>Настройки</span><button class="close" id="closeSet" aria-label="Закрыть">&times;</button></div>
   <div class="dbody">
 
     <h4>Ты</h4>
@@ -138,51 +177,69 @@ const MEMORY_RULES =
   "[[mem: краткий факт]]. Можно несколько тегов. Не записывай мелочи и не дублируй уже известное. " +
   "Тег пользователю не виден, не упоминай его.";
 
+const BOT_ICON = '<svg width="34" height="34" viewBox="0 0 24 24" class="ic" style="stroke-width:1.7"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>';
+
 let memory = load("memory", []);
 let cfg = Object.assign({ uName: "", uAge: "", uAv: "", bName: "", bAv: "" }, load("cfg", {}));
 
 /* ---------- чаты ---------- */
-let chats = load("chats", []);          // [{id, title, messages:[{role,content}]}]
+const newId = () => "c" + Date.now() + Math.floor(Math.random() * 1000);
+let chats = load("chats", []);
 let curId = load("curId", null);
 
-// перенос старой единственной истории, если была
 const oldHistory = load("history", null);
 if (oldHistory && oldHistory.length && !chats.length) {
-  chats.push({ id: "c" + Date.now(), title: oldHistory[0].content.slice(0, 30), messages: oldHistory });
+  chats.push({ id: newId(), ts: Date.now(), title: oldHistory[0].content.slice(0, 30), messages: oldHistory });
   localStorage.removeItem("history");
 }
-if (!chats.length) chats.push({ id: "c" + Date.now(), title: "Новый чат", messages: [] });
+chats.forEach((c) => { if (!c.ts) c.ts = Date.now(); });
+if (!chats.length) chats.push({ id: newId(), ts: Date.now(), title: "Новый чат", messages: [] });
 if (!chats.find((c) => c.id === curId)) curId = chats[0].id;
 
 const cur = () => chats.find((c) => c.id === curId);
 const saveChats = () => { save("chats", chats); save("curId", curId); };
 
 function newChat() {
-  // не плодим пустые чаты
   const empty = chats.find((c) => !c.messages.length);
-  if (empty) { curId = empty.id; }
-  else { const c = { id: "c" + Date.now(), title: "Новый чат", messages: [] }; chats.unshift(c); curId = c.id; }
+  if (empty) curId = empty.id;
+  else { const c = { id: newId(), ts: Date.now(), title: "Новый чат", messages: [] }; chats.unshift(c); curId = c.id; }
   saveChats(); renderAll(); closePanels();
 }
 
 function deleteChat(id) {
   if (!confirm("Удалить этот чат?")) return;
   chats = chats.filter((c) => c.id !== id);
-  if (!chats.length) chats.push({ id: "c" + Date.now(), title: "Новый чат", messages: [] });
+  if (!chats.length) chats.push({ id: newId(), ts: Date.now(), title: "Новый чат", messages: [] });
   if (!chats.find((c) => c.id === curId)) curId = chats[0].id;
   saveChats(); renderAll();
 }
 
+function dayLabel(ts) {
+  const d = new Date(ts), n = new Date();
+  const start = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diff = Math.round((start(n) - start(d)) / 86400000);
+  return diff <= 0 ? "Сегодня" : diff === 1 ? "Вчера" : "Ранее";
+}
+
 function renderChatList() {
   const box = $("chatList");
+  const q = $("q").value.trim().toLowerCase();
   box.innerHTML = "";
-  chats.forEach((c) => {
+  const list = chats
+    .filter((c) => !q || (c.title || "").toLowerCase().includes(q) || c.messages.some((m) => m.content.toLowerCase().includes(q)))
+    .sort((a, b) => b.ts - a.ts);
+  if (!list.length) { box.innerHTML = "<div class='noresult'>Ничего не найдено</div>"; return; }
+  let last = "";
+  list.forEach((c) => {
+    const g = dayLabel(c.ts);
+    if (g !== last) { const h = document.createElement("div"); h.className = "group"; h.textContent = g; box.appendChild(h); last = g; }
     const row = document.createElement("div");
     row.className = "chat" + (c.id === curId ? " cur" : "");
     const t = document.createElement("span");
     t.className = "t"; t.textContent = c.title || "Новый чат";
     const d = document.createElement("button");
-    d.className = "del"; d.type = "button"; d.textContent = "Удалить";
+    d.className = "del"; d.type = "button"; d.setAttribute("aria-label", "Удалить");
+    d.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" class="ic"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3"/></svg>';
     d.onclick = (e) => { e.stopPropagation(); deleteChat(c.id); };
     row.append(t, d);
     row.onclick = () => { curId = c.id; saveChats(); renderAll(); closePanels(); };
@@ -235,13 +292,28 @@ function add(role, text) {
   return msg;
 }
 
+function updateHero() {
+  const empty = !cur().messages.length;
+  $("hero").classList.toggle("on", empty);
+  $("log").style.display = empty ? "none" : "flex";
+  const logo = $("heroLogo");
+  if (cfg.bAv) { logo.style.backgroundImage = "url(" + cfg.bAv + ")"; logo.innerHTML = ""; }
+  else { logo.style.backgroundImage = ""; logo.innerHTML = ""; }
+  logo.style.display = cfg.bAv ? "flex" : "none";
+}
+
 function renderMessages() {
   $("log").innerHTML = "";
   cur().messages.forEach((m) => add(m.role === "user" ? "user" : "bot", m.content));
-  $("titleBot").textContent = cfg.bName || "Чат v3";
+  updateHero();
 }
 
-function renderAll() { renderMessages(); renderChatList(); }
+function renderMe() {
+  setAv($("meAv"), cfg.uAv, cfg.uName || "Я");
+  $("meName").textContent = cfg.uName || "Профиль";
+}
+
+function renderAll() { renderMessages(); renderChatList(); renderMe(); }
 
 function buildMessages() {
   let sys = SYSTEM_PROMPT;
@@ -269,8 +341,8 @@ function extractMemory(text) {
 async function send(text) {
   const chat = cur();
   chat.messages.push({ role: "user", content: text });
-  if (chat.messages.length === 1) chat.title = text.slice(0, 30);
-  saveChats(); renderChatList();
+  if (chat.messages.length === 1) { chat.title = text.slice(0, 30); chat.ts = Date.now(); }
+  saveChats(); renderChatList(); updateHero();
   add("user", text);
   const wait = add("bot", "...");
   $("send").disabled = true;
@@ -302,10 +374,12 @@ async function send(text) {
 $("form").addEventListener("submit", (e) => {
   e.preventDefault();
   const t = $("inp").value.trim();
-  if (!t) return;
+  if (!t || $("send").disabled) return;
   $("inp").value = "";
+  $("inp").style.height = "auto";
   send(t);
 });
+$("inp").addEventListener("input", () => { const el = $("inp"); el.style.height = "auto"; el.style.height = Math.min(el.scrollHeight, 140) + "px"; });
 $("inp").addEventListener("keydown", (e) => {
   if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("form").requestSubmit(); }
 });
@@ -316,11 +390,14 @@ function closePanels() {
   $("setPanel").classList.remove("on");
   $("shade").classList.remove("on");
 }
-$("burger").onclick = () => { renderChatList(); $("chatsPanel").classList.add("on"); $("shade").classList.add("on"); };
-$("gear").onclick = () => { fillForm(); renderMem(); $("setPanel").classList.add("on"); $("shade").classList.add("on"); };
+$("burger").onclick = () => { $("q").value = ""; renderChatList(); $("chatsPanel").classList.add("on"); $("shade").classList.add("on"); };
+function openSettings() { fillForm(); renderMem(); $("chatsPanel").classList.remove("on"); $("setPanel").classList.add("on"); $("shade").classList.add("on"); }
+$("gear").onclick = openSettings;
+$("meRow").onclick = openSettings;
+$("closeSet").onclick = closePanels;
 $("shade").onclick = closePanels;
-document.querySelectorAll("[data-close]").forEach((b) => (b.onclick = closePanels));
-$("newChat").onclick = newChat;
+$("newTop").onclick = newChat;
+$("q").addEventListener("input", renderChatList);
 
 /* ---------- настройки ---------- */
 function fillForm() {
@@ -336,7 +413,7 @@ function bind(id, key, after) {
     if (after) after();
   });
 }
-bind("uName", "uName", () => { setAv($("uAv"), cfg.uAv, cfg.uName || "Я"); renderMessages(); });
+bind("uName", "uName", () => { setAv($("uAv"), cfg.uAv, cfg.uName || "Я"); renderMessages(); renderMe(); });
 bind("uAge", "uAge");
 bind("bName", "bName", () => { setAv($("bAv"), cfg.bAv, cfg.bName || "Б"); renderMessages(); });
 
@@ -347,13 +424,13 @@ async function pickAvatar(fileId, key, avId, name) {
     cfg[key] = await fileToAvatar(f);
     save("cfg", cfg);
     setAv($(avId), cfg[key], name());
-    renderMessages();
+    renderMessages(); renderMe();
   } catch { alert("Не получилось прочитать картинку"); }
   $(fileId).value = "";
 }
 $("uFile").onchange = () => pickAvatar("uFile", "uAv", "uAv", () => cfg.uName || "Я");
 $("bFile").onchange = () => pickAvatar("bFile", "bAv", "bAv", () => cfg.bName || "Б");
-$("uDel").onclick = () => { cfg.uAv = ""; save("cfg", cfg); fillForm(); renderMessages(); };
+$("uDel").onclick = () => { cfg.uAv = ""; save("cfg", cfg); fillForm(); renderMessages(); renderMe(); };
 $("bDel").onclick = () => { cfg.bAv = ""; save("cfg", cfg); fillForm(); renderMessages(); };
 
 function renderMem() {
