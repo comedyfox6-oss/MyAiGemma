@@ -1,5 +1,5 @@
 {
-  "name": "gemma-chat",
+  "name": "gemmaaimy",
   "main": "worker.js",
   "compatibility_date": "2025-06-01",
   "ai": { "binding": "AI" }
