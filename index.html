@@ -33,10 +33,10 @@
   button.light { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font: inherit; cursor: pointer; }
 
   /* боковое меню */
-  #shade { position: fixed; inset: 0; background: rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  #shade { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .2s; }
   #shade.on { opacity: 1; pointer-events: auto; }
-  #drawer { position: fixed; top: 0; bottom: 0; left: 0; width: min(380px, 90vw); background: var(--bg); border-right: 1px solid var(--line); transform: translateX(-100%); transition: transform .2s; display: flex; flex-direction: column; }
-  #drawer.on { transform: none; }
+  #drawer { position: fixed; z-index: 1001; top: 0; bottom: 0; left: 0; width: min(380px, 90vw); background: var(--bg); border-right: 1px solid var(--line); transform: translateX(-100%); transition: transform .2s; display: flex; flex-direction: column; pointer-events: none; }
+  #drawer.on { transform: none; pointer-events: auto; }
   .dhead { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; }
   .close { background: none; border: 0; font-size: 26px; line-height: 1; cursor: pointer; color: var(--text); padding: 0 4px; }
   .dbody { flex: 1; overflow-y: auto; padding: 8px 16px 24px; }
