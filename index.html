@@ -2,209 +2,376 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ffffff">
-<title>Gemma — чат</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чат</title>
 <style>
-:root{color-scheme:light;--bg:#fff;--surface:#f7f7f8;--surface2:#eeeef0;--line:#e7e7eb;--text:#202024;--muted:#777780;--accent:#242429;--bubble:#f1f1f3}
-*{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;overflow:hidden}
-button,input,textarea{font:inherit}
-button{cursor:pointer}
-.topbar{height:60px;flex:none;display:flex;align-items:center;gap:14px;padding:0 16px;border-bottom:1px solid var(--line);background:var(--bg)}
-.iconbtn{width:40px;height:40px;border:0;border-radius:12px;background:transparent;display:grid;place-items:center;color:var(--text)}
-.iconbtn:hover{background:var(--surface2)}
-.iconbtn svg{width:22px;height:22px}
-.brand{font-weight:650;font-size:16px;flex:1}
-.status{font-size:12px;color:var(--muted)}
-#chat{flex:1;min-height:0;overflow:auto;padding:24px 16px 30px;scroll-behavior:smooth}
-.messages{width:100%;max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
-.welcome{margin:auto;text-align:center;padding:10vh 16px 16px;color:var(--muted)}
-.welcome h1{font-size:27px;letter-spacing:-.7px;color:var(--text);margin:0 0 8px;font-weight:650}
-.welcome p{margin:0}
-.message{display:flex;gap:12px;align-items:flex-start;max-width:100%}
-.message.user{flex-direction:row-reverse}
-.avatar{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;background:var(--surface2);font-size:13px;font-weight:650}
-.message.user .avatar{background:var(--accent);color:#fff}
-.content{max-width:min( min(100% - 44px, 680px), 88%);padding:3px 0;white-space:pre-wrap;overflow-wrap:anywhere}
-.message.user .content{background:var(--surface);padding:10px 14px;border-radius:18px 18px 4px 18px}
-.message.assistant .content{padding-top:2px}
-.message.error .content{color:#b42318}
-.composer-wrap{flex:none;padding:12px 16px max(14px,env(safe-area-inset-bottom));background:linear-gradient(transparent,var(--bg) 16%)}
-.composer{max-width:780px;margin:0 auto;border:1px solid #d9d9df;border-radius:24px;padding:8px 9px 8px 16px;display:flex;align-items:flex-end;gap:10px;box-shadow:0 3px 18px #00000008;background:var(--bg)}
-.composer:focus-within{border-color:#aaaab4}
-#prompt{border:0;outline:0;resize:none;min-height:36px;max-height:160px;flex:1;padding:7px 0;background:transparent;color:var(--text);line-height:1.45}
-#prompt::placeholder{color:#9999a2}
-#send{width:38px;height:38px;border:0;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
-#send:disabled{opacity:.45;cursor:default}
-#send svg{width:19px;height:19px}
-.hint{text-align:center;font-size:11px;color:#9999a2;margin:8px auto 0}
-#overlay{position:fixed;inset:0;background:#0006;z-index:20;opacity:0;visibility:hidden;transition:.2s}
-#overlay.open{opacity:1;visibility:visible}
-#drawer{position:fixed;z-index:21;inset:0 auto 0 0;width:min(360px,88vw);background:var(--bg);border-right:1px solid var(--line);transform:translateX(-102%);transition:transform .22s ease;display:flex;flex-direction:column;box-shadow:8px 0 30px #00000010}
-#drawer.open{transform:translateX(0)}
-.drawer-head{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;border-bottom:1px solid var(--line);font-weight:650}
-.drawer-body{overflow:auto;padding:8px 18px 28px}
-.section{padding:16px 0;border-bottom:1px solid var(--line)}
-.section h2{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 12px}
-.field{display:block;margin:12px 0}
-.field span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
-.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);padding:10px 11px;outline:none}
-.field input:focus,.field textarea:focus{border-color:#aaaab4}
-.field textarea{min-height:88px;resize:vertical}
-.smallbtn{border:1px solid var(--line);background:var(--surface);color:var(--text);padding:8px 12px;border-radius:10px}
-.smallbtn:hover{background:var(--surface2)}
-.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.memory-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
-.memory-item span{flex:1;overflow-wrap:anywhere}
-.memory-item button{border:0;background:transparent;color:var(--muted);padding:0 4px}
-.empty{font-size:13px;color:var(--muted)}
-@media(max-width:520px){#chat{padding:18px 13px}.composer-wrap{padding-left:12px;padding-right:12px}.topbar{padding:0 12px}}
+  :root { --bg:#ffffff; --panel:#f6f6f8; --line:#e4e4ea; --me:#3b3b46; --bot:#f0f0f4; --text:#1c1c22; --muted:#80808e; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, sans-serif; display: flex; flex-direction: column; }
+
+  header { display: flex; gap: 8px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  header .title { flex: 1; font-weight: 600; text-align: center; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .iconbtn { width: 38px; height: 38px; background: none; border: 0; padding: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); }
+  .burger { flex-direction: column; gap: 5px; }
+  .burger i { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
+
+  #log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; gap: 8px; align-items: flex-end; max-width: 92%; }
+  .row.user { align-self: flex-end; flex-direction: row-reverse; }
+  .row.bot { align-self: flex-start; }
+  .av { width: 32px; height: 32px; border-radius: 50%; background: #d9d9e1; color: #55555f; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex: none; background-size: cover; background-position: center; }
+  .msg { padding: 9px 13px; border-radius: 16px; white-space: pre-wrap; word-wrap: break-word; }
+  .user .msg { background: var(--me); color: #fff; border-bottom-right-radius: 4px; }
+  .bot .msg { background: var(--bot); border-bottom-left-radius: 4px; }
+  .sys { align-self: center; color: var(--muted); font-size: 13px; text-align: center; }
+
+  form { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
+  textarea { flex: 1; resize: none; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; font: inherit; max-height: 120px; outline: none; }
+  textarea:focus, input:focus { border-color: #a9a9b8; }
+  button.btn { background: var(--me); color: #fff; border: 0; border-radius: 12px; padding: 0 18px; font: inherit; cursor: pointer; }
+  button.btn:disabled { opacity: .5; }
+  .light { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font: inherit; cursor: pointer; }
+
+  /* панели */
+  #shade { position: fixed; inset: 0; background: rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  #shade.on { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; top: 0; bottom: 0; width: min(380px, 90vw); background: var(--bg); display: flex; flex-direction: column; transition: transform .2s; }
+  #chatsPanel { left: 0; border-right: 1px solid var(--line); transform: translateX(-100%); }
+  #setPanel { right: 0; border-left: 1px solid var(--line); transform: translateX(100%); }
+  .drawer.on { transform: none; }
+  .dhead { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .close { background: none; border: 0; font-size: 26px; line-height: 1; cursor: pointer; color: var(--text); padding: 0 4px; }
+  .dbody { flex: 1; overflow-y: auto; padding: 8px 16px 24px; }
+  .dbody h4 { margin: 20px 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .dbody label.l { display: block; margin: 10px 0 4px; font-size: 14px; color: var(--muted); }
+  .dbody input[type=text], .dbody input[type=number] { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font: inherit; }
+  .avrow { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+  .avrow .av { width: 52px; height: 52px; font-size: 20px; }
+  .avrow input[type=file] { display: none; }
+  .mem { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .mem span { flex: 1; font-size: 15px; }
+  .mem button, .chat button.del { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; }
+  .empty { color: var(--muted); font-size: 14px; padding: 8px 0; }
+  .newchat { width: 100%; margin: 12px 0 6px; }
+  .chat { display: flex; align-items: center; gap: 6px; padding: 10px 10px; border-radius: 10px; cursor: pointer; }
+  .chat:hover { background: var(--panel); }
+  .chat.cur { background: var(--bot); }
+  .chat .t { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
-<header class="topbar">
-<button class="iconbtn" id="menuBtn" aria-label="Открыть меню" title="Меню">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-</button>
-<div class="brand" id="botTitle">Gemma</div>
-<div class="status" id="status">Готова к общению</div>
+
+<header>
+  <button class="iconbtn burger" id="burger" aria-label="Чаты"><i></i><i></i><i></i></button>
+  <div class="title" id="titleBot">Чат</div>
+  <button class="iconbtn" id="gear" aria-label="Настройки">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+  </button>
 </header>
-<main id="chat"><div class="messages" id="messages"></div></main>
-<div class="composer-wrap">
-<form class="composer" id="chatForm">
-<textarea id="prompt" rows="1" placeholder="Напишите сообщение…" aria-label="Сообщение"></textarea>
-<button id="send" type="submit" aria-label="Отправить">
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-</button>
+
+<div id="log"></div>
+
+<form id="form">
+  <textarea id="inp" rows="1" placeholder="Сообщение"></textarea>
+  <button type="submit" class="btn" id="send">Отправить</button>
 </form>
-<div class="hint">Enter — отправить · Shift + Enter — новая строка</div>
-</div>
-<div id="overlay"></div>
-<aside id="drawer" aria-hidden="true">
-<div class="drawer-head"><span>Меню и настройки</span><button class="iconbtn" id="closeBtn" aria-label="Закрыть меню">✕</button></div>
-<div class="drawer-body">
-<section class="section">
-<h2>Чат</h2>
-<div class="row-actions"><button class="smallbtn" id="newChat">＋ Новый чат</button><button class="smallbtn" id="clearChat">Очистить историю</button></div>
-</section>
-<section class="section">
-<h2>Подключение</h2>
-<label class="field"><span>Адрес AI Worker</span><input id="workerUrl" type="url" placeholder="https://…workers.dev" autocomplete="url"></label>
-</section>
-<section class="section">
-<h2>Ассистент</h2>
-<label class="field"><span>Имя</span><input id="botName" type="text" placeholder="Gemma"></label>
-<label class="field"><span>Инструкция для ассистента</span><textarea id="systemPrompt" placeholder="Как ассистент должен отвечать?"></textarea></label>
-</section>
-<section class="section">
-<h2>Профиль</h2>
-<label class="field"><span>Как к тебе обращаться</span><input id="userName" type="text" placeholder="Имя"></label>
-</section>
-<section class="section">
-<h2>Память</h2>
-<p class="empty">Важные факты сохраняются здесь и передаются ассистенту в следующих сообщениях.</p>
-<label class="field"><span>Добавить факт в память</span><input id="memoryInput" type="text" placeholder="Например: я учусь на повара"></label>
-<div class="row-actions"><button class="smallbtn" id="addMemory">Сохранить факт</button><button class="smallbtn" id="clearMemory">Очистить память</button></div>
-<div id="memoryList" style="margin-top:10px"></div>
-</section>
-</div>
+
+<div id="shade"></div>
+
+<!-- левая панель: чаты -->
+<aside class="drawer" id="chatsPanel">
+  <div class="dhead"><span>Чаты</span><button class="close" data-close aria-label="Закрыть">&times;</button></div>
+  <div class="dbody">
+    <button class="light newchat" id="newChat" type="button">Новый чат</button>
+    <div id="chatList"></div>
+  </div>
 </aside>
+
+<!-- правая панель: настройки -->
+<aside class="drawer" id="setPanel">
+  <div class="dhead"><span>Настройки</span><button class="close" data-close aria-label="Закрыть">&times;</button></div>
+  <div class="dbody">
+
+    <h4>Ты</h4>
+    <label class="l">Имя</label>
+    <input type="text" id="uName">
+    <label class="l">Возраст</label>
+    <input type="number" id="uAge" min="1" max="120">
+    <label class="l">Аватарка</label>
+    <div class="avrow">
+      <div class="av" id="uAv"></div>
+      <label class="light" style="cursor:pointer">Выбрать<input type="file" id="uFile" accept="image/*"></label>
+      <button class="light" id="uDel" type="button">Убрать</button>
+    </div>
+
+    <h4>Бот</h4>
+    <label class="l">Имя</label>
+    <input type="text" id="bName">
+    <label class="l">Аватарка</label>
+    <div class="avrow">
+      <div class="av" id="bAv"></div>
+      <label class="light" style="cursor:pointer">Выбрать<input type="file" id="bFile" accept="image/*"></label>
+      <button class="light" id="bDel" type="button">Убрать</button>
+    </div>
+
+    <h4>Память ИИ</h4>
+    <div id="memList"></div>
+    <button class="light" id="clrMem" type="button" style="margin-top:12px">Очистить память</button>
+  </div>
+</aside>
+
 <script>
-"use strict";
-const $ = id => document.getElementById(id);
-const DEFAULT_WORKER = "https://gemmaaimy.comedyfox6.workers.dev";
-const DEFAULT_SYSTEM = "Ты дружелюбный, живой собеседник. Отвечай по-русски, естественно и по делу.";
-function read(key, fallback){try{const value=JSON.parse(localStorage.getItem(key));return value ?? fallback}catch{return fallback}}
-function write(key,value){try{localStorage.setItem(key,JSON.stringify(value));return true}catch(error){console.error(error);return false}}
-let history = read("history",[]);
-let memory = read("memory",[]);
-let cfg = Object.assign({url:DEFAULT_WORKER,sys:DEFAULT_SYSTEM,uName:"",bName:"Gemma"},read("cfg",{}));
-if(!cfg.url) cfg.url=DEFAULT_WORKER;
-if(!Array.isArray(history)) history=[];
-if(!Array.isArray(memory)) memory=[];
-let busy=false;
+/* ====== ЗДЕСЬ МЕНЯЕТСЯ ВСЁ ГЛАВНОЕ ====== */
+const WORKER_URL = "https://gemmaaimy.comedyfox6.workers.dev";
+const SYSTEM_PROMPT = "Ты дружелюбный, живой собеседник. Отвечай по-русски, коротко и по делу.";
+/* ======================================== */
 
-function openMenu(){$("drawer").classList.add("open");$("overlay").classList.add("open");$("drawer").setAttribute("aria-hidden","false")}
-function closeMenu(){$("drawer").classList.remove("open");$("overlay").classList.remove("open");$("drawer").setAttribute("aria-hidden","true")}
-$("menuBtn").addEventListener("click",openMenu);
-$("closeBtn").addEventListener("click",closeMenu);
-$("overlay").addEventListener("click",closeMenu);
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu()});
+const $ = (id) => document.getElementById(id);
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { alert("Не удалось сохранить: " + e.message); } };
 
-function saveConfig(){cfg.url=$("workerUrl").value.trim();cfg.bName=$("botName").value.trim()||"Gemma";cfg.sys=$("systemPrompt").value.trim()||DEFAULT_SYSTEM;cfg.uName=$("userName").value.trim();write("cfg",cfg);$("botTitle").textContent=cfg.bName}
-function fillSettings(){$("workerUrl").value=cfg.url;$("botName").value=cfg.bName;$("systemPrompt").value=cfg.sys;$("userName").value=cfg.uName;$("botTitle").textContent=cfg.bName||"Gemma"}
-["workerUrl","botName","systemPrompt","userName"].forEach(id=>$(id).addEventListener("change",saveConfig));
+const MEMORY_RULES =
+  "\n\nУ тебя есть долговременная память. Если пользователь рассказал что-то важное и долговечное " +
+  "(предпочтения, планы, факты о нём), запиши это, добавив в конец ответа тег " +
+  "[[mem: краткий факт]]. Можно несколько тегов. Не записывай мелочи и не дублируй уже известное. " +
+  "Тег пользователю не виден, не упоминай его.";
 
-function scrollBottom(){$("chat").scrollTop=$("chat").scrollHeight}
-function render(){
- const root=$("messages");root.replaceChildren();
- if(!history.length){const welcome=document.createElement("div");welcome.className="welcome";const h=document.createElement("h1");h.textContent="Чем займёмся?";const p=document.createElement("p");p.textContent=(cfg.bName||"Gemma")+" готова к разговору.";welcome.append(h,p);root.append(welcome);return}
- history.forEach(item=>appendMessage(item.role==="user"?"user":"assistant",item.content));
- scrollBottom();
+let memory = load("memory", []);
+let cfg = Object.assign({ uName: "", uAge: "", uAv: "", bName: "", bAv: "" }, load("cfg", {}));
+
+/* ---------- чаты ---------- */
+let chats = load("chats", []);          // [{id, title, messages:[{role,content}]}]
+let curId = load("curId", null);
+
+// перенос старой единственной истории, если была
+const oldHistory = load("history", null);
+if (oldHistory && oldHistory.length && !chats.length) {
+  chats.push({ id: "c" + Date.now(), title: oldHistory[0].content.slice(0, 30), messages: oldHistory });
+  localStorage.removeItem("history");
 }
-function appendMessage(role,text,extraClass=""){
- const row=document.createElement("div");row.className="message "+role+(extraClass?" "+extraClass:"");
- const avatar=document.createElement("div");avatar.className="avatar";avatar.textContent=role==="user"?(cfg.uName?cfg.uName[0].toUpperCase():"Я"):(cfg.bName||"G")[0].toUpperCase();
- const body=document.createElement("div");body.className="content";body.textContent=text;
- row.append(avatar,body);$("messages").append(row);scrollBottom();return body;
+if (!chats.length) chats.push({ id: "c" + Date.now(), title: "Новый чат", messages: [] });
+if (!chats.find((c) => c.id === curId)) curId = chats[0].id;
+
+const cur = () => chats.find((c) => c.id === curId);
+const saveChats = () => { save("chats", chats); save("curId", curId); };
+
+function newChat() {
+  // не плодим пустые чаты
+  const empty = chats.find((c) => !c.messages.length);
+  if (empty) { curId = empty.id; }
+  else { const c = { id: "c" + Date.now(), title: "Новый чат", messages: [] }; chats.unshift(c); curId = c.id; }
+  saveChats(); renderAll(); closePanels();
 }
-const MEMORY_RULES="\n\nДолговременная память: если пользователь сообщает важный факт о себе, который пригодится в будущих разговорах, добавь в самый конец ответа отдельный тег [[mem: краткий факт]]. Не записывай временные мелочи и не дублируй факты. Тег не показывай и не объясняй.";
-function buildMessages(){
- let system=cfg.sys||DEFAULT_SYSTEM;
- if(cfg.bName)system+="\nТебя зовут "+cfg.bName+".";
- if(cfg.uName)system+="\nПользователя зовут "+cfg.uName+".";
- system+=MEMORY_RULES;
- if(memory.length)system+="\n\nСохранённая память о пользователе:\n- "+memory.join("\n- ");
- return [{role:"system",content:system},...history.slice(-30)];
+
+function deleteChat(id) {
+  if (!confirm("Удалить этот чат?")) return;
+  chats = chats.filter((c) => c.id !== id);
+  if (!chats.length) chats.push({ id: "c" + Date.now(), title: "Новый чат", messages: [] });
+  if (!chats.find((c) => c.id === curId)) curId = chats[0].id;
+  saveChats(); renderAll();
 }
-function extractMemory(reply){
- const pattern=/\[\[\s*mem\s*:\s*([^\]]+?)\s*\]\]/gi;let match,added=0;
- while((match=pattern.exec(reply))){const fact=match[1].trim();if(fact&&!memory.includes(fact)){memory.push(fact);added++}}
- if(added){write("memory",memory);renderMemory()}
- return {text:reply.replace(pattern,"").trim(),added};
+
+function renderChatList() {
+  const box = $("chatList");
+  box.innerHTML = "";
+  chats.forEach((c) => {
+    const row = document.createElement("div");
+    row.className = "chat" + (c.id === curId ? " cur" : "");
+    const t = document.createElement("span");
+    t.className = "t"; t.textContent = c.title || "Новый чат";
+    const d = document.createElement("button");
+    d.className = "del"; d.type = "button"; d.textContent = "Удалить";
+    d.onclick = (e) => { e.stopPropagation(); deleteChat(c.id); };
+    row.append(t, d);
+    row.onclick = () => { curId = c.id; saveChats(); renderAll(); closePanels(); };
+    box.appendChild(row);
+  });
 }
-function renderMemory(){
- const root=$("memoryList");root.replaceChildren();
- if(!memory.length){const p=document.createElement("div");p.className="empty";p.textContent="Память пока пустая.";root.append(p);return}
- memory.forEach((fact,index)=>{const row=document.createElement("div");row.className="memory-item";const span=document.createElement("span");span.textContent=fact;const del=document.createElement("button");del.type="button";del.textContent="Удалить";del.addEventListener("click",()=>{memory.splice(index,1);write("memory",memory);renderMemory()});row.append(span,del);root.append(row)});
+
+/* ---------- аватарки ---------- */
+function setAv(el, img, name) {
+  if (img) { el.style.backgroundImage = "url(" + img + ")"; el.textContent = ""; }
+  else { el.style.backgroundImage = ""; el.textContent = (name || "?").trim().charAt(0).toUpperCase(); }
 }
-function getReply(data){
- if(typeof data.reply==="string")return data.reply;
- if(typeof data.response==="string")return data.response;
- if(typeof data.content==="string")return data.content;
- if(data.choices?.[0]?.message?.content)return data.choices[0].message.content;
- if(data.result?.response)return data.result.response;
- throw new Error("Сервер вернул ответ в неизвестном формате");
+
+function fileToAvatar(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const fr = new FileReader();
+    fr.onload = () => { img.src = fr.result; };
+    fr.onerror = reject;
+    img.onload = () => {
+      const S = 128, c = document.createElement("canvas");
+      c.width = c.height = S;
+      const m = Math.min(img.width, img.height);
+      c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+      resolve(c.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = reject;
+    fr.readAsDataURL(file);
+  });
 }
-async function sendMessage(raw){
- const text=raw.trim();if(!text||busy)return;
- saveConfig();
- if(!cfg.url){openMenu();appendMessage("assistant","Сначала укажи адрес AI Worker в меню.");return}
- history.push({role:"user",content:text});write("history",history);render();
- busy=true;$("send").disabled=true;$("status").textContent="Печатает…";
- const pending=appendMessage("assistant","Думаю…");
- try{
-  const response=await fetch(cfg.url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({messages:buildMessages()})});
-  const rawBody=await response.text();let data;
-  try{data=JSON.parse(rawBody)}catch{throw new Error("Сервер вернул не JSON (HTTP "+response.status+")")}
-  if(!response.ok||data.error)throw new Error(data.error||("HTTP "+response.status));
-  const extracted=extractMemory(getReply(data));const answer=extracted.text||"…";
-  history.push({role:"assistant",content:answer});write("history",history);pending.textContent=answer;
-  if(extracted.added){const note=document.createElement("div");note.className="empty";note.textContent="Сохранено в память: "+extracted.added;pending.append(document.createElement("br"),note)}
- }catch(error){pending.textContent="Не удалось получить ответ: "+error.message;pending.parentElement.classList.add("error")}
- finally{busy=false;$("send").disabled=false;$("status").textContent="Готова к общению";$("prompt").focus();scrollBottom()}
+
+/* ---------- сообщения ---------- */
+function add(role, text) {
+  if (role === "sys") {
+    const s = document.createElement("div");
+    s.className = "sys"; s.textContent = text;
+    $("log").appendChild(s); $("log").scrollTop = 1e9;
+    return s;
+  }
+  const row = document.createElement("div");
+  row.className = "row " + role;
+  const av = document.createElement("div");
+  av.className = "av";
+  if (role === "user") setAv(av, cfg.uAv, cfg.uName || "Я");
+  else setAv(av, cfg.bAv, cfg.bName || "Б");
+  const msg = document.createElement("div");
+  msg.className = "msg"; msg.textContent = text;
+  row.append(av, msg);
+  $("log").appendChild(row); $("log").scrollTop = 1e9;
+  return msg;
 }
-$("chatForm").addEventListener("submit",event=>{event.preventDefault();const value=$("prompt").value;$("prompt").value="";$("prompt").style.height="auto";sendMessage(value)});
-$("prompt").addEventListener("keydown",event=>{if(event.key==="Enter"&&!event.shiftKey){event.preventDefault();$("chatForm").requestSubmit()}});
-$("prompt").addEventListener("input",()=>{$("prompt").style.height="auto";$("prompt").style.height=Math.min($("prompt").scrollHeight,160)+"px"});
-$("newChat").addEventListener("click",()=>{if(!history.length){closeMenu();return}if(confirm("Начать новый чат? Текущая переписка будет очищена, память останется.")){history=[];write("history",history);render();closeMenu()}});
-$("clearChat").addEventListener("click",()=>{if(confirm("Удалить всю историю переписки? Память останется.")){history=[];write("history",history);render();closeMenu()}});
-$("addMemory").addEventListener("click",()=>{const value=$("memoryInput").value.trim();if(!value)return;if(!memory.includes(value)){memory.push(value);write("memory",memory);renderMemory()}$("memoryInput").value=""});
-$("memoryInput").addEventListener("keydown",event=>{if(event.key==="Enter"){event.preventDefault();$("addMemory").click()}});
-$("clearMemory").addEventListener("click",()=>{if(confirm("Удалить все сохранённые факты из памяти?")){memory=[];write("memory",memory);renderMemory()}});
-fillSettings();renderMemory();render();
+
+function renderMessages() {
+  $("log").innerHTML = "";
+  cur().messages.forEach((m) => add(m.role === "user" ? "user" : "bot", m.content));
+  $("titleBot").textContent = cfg.bName || "Чат";
+}
+
+function renderAll() { renderMessages(); renderChatList(); }
+
+function buildMessages() {
+  let sys = SYSTEM_PROMPT;
+  if (cfg.bName) sys += "\n\nТебя зовут " + cfg.bName + ".";
+  const who = [];
+  if (cfg.uName) who.push("Пользователя зовут " + cfg.uName + ".");
+  if (cfg.uAge) who.push("Ему/ей " + cfg.uAge + " лет.");
+  if (who.length) sys += "\n\n" + who.join(" ");
+  sys += MEMORY_RULES;
+  if (memory.length) sys += "\n\nТо, что ты помнишь о пользователе:\n- " + memory.join("\n- ");
+  return [{ role: "system", content: sys }, ...cur().messages.slice(-20)];
+}
+
+function extractMemory(text) {
+  const re = /\[\[\s*mem\s*:\s*([^\]]+?)\s*\]\]/gi;
+  let m, added = 0;
+  while ((m = re.exec(text))) {
+    const fact = m[1].trim();
+    if (fact && !memory.includes(fact)) { memory.push(fact); added++; }
+  }
+  if (added) { save("memory", memory); renderMem(); }
+  return { clean: text.replace(re, "").trim(), added };
+}
+
+async function send(text) {
+  const chat = cur();
+  chat.messages.push({ role: "user", content: text });
+  if (chat.messages.length === 1) chat.title = text.slice(0, 30);
+  saveChats(); renderChatList();
+  add("user", text);
+  const wait = add("bot", "...");
+  $("send").disabled = true;
+  try {
+    const res = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: buildMessages() }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || "HTTP " + res.status);
+    const { clean, added } = extractMemory(data.reply || "");
+    const reply = clean || "(пустой ответ)";
+    chat.messages.push({ role: "assistant", content: reply });
+    saveChats();
+    wait.textContent = reply;
+    if (added) add("sys", "Запомнил: " + added);
+  } catch (e) {
+    wait.parentElement.remove();
+    add("sys", "Ошибка: " + e.message);
+    chat.messages.pop();
+    saveChats();
+  } finally {
+    $("send").disabled = false;
+    $("log").scrollTop = 1e9;
+  }
+}
+
+$("form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const t = $("inp").value.trim();
+  if (!t) return;
+  $("inp").value = "";
+  send(t);
+});
+$("inp").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("form").requestSubmit(); }
+});
+
+/* ---------- панели ---------- */
+function closePanels() {
+  $("chatsPanel").classList.remove("on");
+  $("setPanel").classList.remove("on");
+  $("shade").classList.remove("on");
+}
+$("burger").onclick = () => { renderChatList(); $("chatsPanel").classList.add("on"); $("shade").classList.add("on"); };
+$("gear").onclick = () => { fillForm(); renderMem(); $("setPanel").classList.add("on"); $("shade").classList.add("on"); };
+$("shade").onclick = closePanels;
+document.querySelectorAll("[data-close]").forEach((b) => (b.onclick = closePanels));
+$("newChat").onclick = newChat;
+
+/* ---------- настройки ---------- */
+function fillForm() {
+  $("uName").value = cfg.uName; $("uAge").value = cfg.uAge; $("bName").value = cfg.bName;
+  setAv($("uAv"), cfg.uAv, cfg.uName || "Я");
+  setAv($("bAv"), cfg.bAv, cfg.bName || "Б");
+}
+
+function bind(id, key, after) {
+  $(id).addEventListener("input", () => {
+    cfg[key] = $(id).value.trim();
+    save("cfg", cfg);
+    if (after) after();
+  });
+}
+bind("uName", "uName", () => { setAv($("uAv"), cfg.uAv, cfg.uName || "Я"); renderMessages(); });
+bind("uAge", "uAge");
+bind("bName", "bName", () => { setAv($("bAv"), cfg.bAv, cfg.bName || "Б"); renderMessages(); });
+
+async function pickAvatar(fileId, key, avId, name) {
+  const f = $(fileId).files[0];
+  if (!f) return;
+  try {
+    cfg[key] = await fileToAvatar(f);
+    save("cfg", cfg);
+    setAv($(avId), cfg[key], name());
+    renderMessages();
+  } catch { alert("Не получилось прочитать картинку"); }
+  $(fileId).value = "";
+}
+$("uFile").onchange = () => pickAvatar("uFile", "uAv", "uAv", () => cfg.uName || "Я");
+$("bFile").onchange = () => pickAvatar("bFile", "bAv", "bAv", () => cfg.bName || "Б");
+$("uDel").onclick = () => { cfg.uAv = ""; save("cfg", cfg); fillForm(); renderMessages(); };
+$("bDel").onclick = () => { cfg.bAv = ""; save("cfg", cfg); fillForm(); renderMessages(); };
+
+function renderMem() {
+  const box = $("memList");
+  box.innerHTML = memory.length ? "" : "<div class='empty'>Пока пусто. ИИ запишет сюда важное сам.</div>";
+  memory.forEach((f, i) => {
+    const row = document.createElement("div");
+    row.className = "mem";
+    row.innerHTML = "<span></span><button type='button'>Удалить</button>";
+    row.firstChild.textContent = f;
+    row.lastChild.onclick = () => { memory.splice(i, 1); save("memory", memory); renderMem(); };
+    box.appendChild(row);
+  });
+}
+$("clrMem").onclick = () => { if (confirm("Стереть всю память?")) { memory = []; save("memory", memory); renderMem(); } };
+
+fillForm();
+renderMem();
+renderAll();
 </script>
 </body>
 </html>
