@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Чат</title>
+<style>
+  :root { --bg:#ffffff; --panel:#f6f6f8; --line:#e4e4ea; --me:#3b3b46; --bot:#f0f0f4; --text:#1c1c22; --muted:#80808e; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { background: var(--bg); color: var(--text); font: 16px/1.45 system-ui, sans-serif; display: flex; flex-direction: column; }
+
+  header { display: flex; gap: 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  header .title { flex: 1; font-weight: 600; }
+  .burger { width: 38px; height: 38px; background: none; border: 0; padding: 0; cursor: pointer; display: flex; flex-direction: column; justify-content: center; gap: 5px; align-items: center; }
+  .burger i { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
+
+  #log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; gap: 8px; align-items: flex-end; max-width: 92%; }
+  .row.user { align-self: flex-end; flex-direction: row-reverse; }
+  .row.bot { align-self: flex-start; }
+  .av { width: 32px; height: 32px; border-radius: 50%; background: #d9d9e1; color: #55555f; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex: none; background-size: cover; background-position: center; }
+  .msg { padding: 9px 13px; border-radius: 16px; white-space: pre-wrap; word-wrap: break-word; }
+  .user .msg { background: var(--me); color: #fff; border-bottom-right-radius: 4px; }
+  .bot .msg { background: var(--bot); border-bottom-left-radius: 4px; }
+  .sys { align-self: center; color: var(--muted); font-size: 13px; text-align: center; }
+
+  form { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); }
+  textarea { flex: 1; resize: none; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; font: inherit; max-height: 120px; outline: none; }
+  textarea:focus, input:focus { border-color: #a9a9b8; }
+  button.btn { background: var(--me); color: #fff; border: 0; border-radius: 12px; padding: 0 18px; font: inherit; cursor: pointer; }
+  button.btn:disabled { opacity: .5; }
+  button.light { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 14px; font: inherit; cursor: pointer; }
+
+  /* боковое меню */
+  #shade { position: fixed; inset: 0; background: rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .2s; }
+  #shade.on { opacity: 1; pointer-events: auto; }
+  #drawer { position: fixed; top: 0; bottom: 0; left: 0; width: min(380px, 90vw); background: var(--bg); border-right: 1px solid var(--line); transform: translateX(-100%); transition: transform .2s; display: flex; flex-direction: column; }
+  #drawer.on { transform: none; }
+  .dhead { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600; }
+  .close { background: none; border: 0; font-size: 26px; line-height: 1; cursor: pointer; color: var(--text); padding: 0 4px; }
+  .dbody { flex: 1; overflow-y: auto; padding: 8px 16px 24px; }
+  .dbody h4 { margin: 20px 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .dbody label { display: block; margin: 10px 0 4px; font-size: 14px; color: var(--muted); }
+  .dbody input[type=text], .dbody input[type=number], .dbody textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font: inherit; }
+  .dbody textarea { min-height: 90px; resize: vertical; max-height: none; }
+  .avrow { display: flex; align-items: center; gap: 12px; margin-top: 6px; }
+  .avrow .av { width: 52px; height: 52px; font-size: 20px; }
+  .avrow input[type=file] { display: none; }
+  .mem { display: flex; gap: 8px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  .mem span { flex: 1; font-size: 15px; }
+  .mem button { background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; }
+  .empty { color: var(--muted); font-size: 14px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="burger" id="burger" aria-label="Меню"><i></i><i></i><i></i></button>
+  <div class="title" id="titleBot">Чат</div>
+</header>
+
+<div id="log"></div>
+
+<form id="form">
+  <textarea id="inp" rows="1" placeholder="Сообщение"></textarea>
+  <button type="submit" class="btn" id="send">Отправить</button>
+</form>
+
+<div id="shade"></div>
+
+<aside id="drawer">
+  <div class="dhead"><span>Настройки</span><button class="close" id="closeDrawer" aria-label="Закрыть">&times;</button></div>
+  <div class="dbody">
+
+    <h4>Ты</h4>
+    <label>Имя</label>
+    <input type="text" id="uName">
+    <label>Возраст</label>
+    <input type="number" id="uAge" min="1" max="120">
+    <label>Аватарка</label>
+    <div class="avrow">
+      <div class="av" id="uAv"></div>
+      <label class="light" style="margin:0;cursor:pointer;color:var(--text)">Выбрать<input type="file" id="uFile" accept="image/*"></label>
+      <button class="light" id="uDel" type="button">Убрать</button>
+    </div>
+
+    <h4>Бот</h4>
+    <label>Имя</label>
+    <input type="text" id="bName">
+    <label>Аватарка</label>
+    <div class="avrow">
+      <div class="av" id="bAv"></div>
+      <label class="light" style="margin:0;cursor:pointer;color:var(--text)">Выбрать<input type="file" id="bFile" accept="image/*"></label>
+      <button class="light" id="bDel" type="button">Убрать</button>
+    </div>
+    <label>Характер (системный промпт)</label>
+    <textarea id="bSys"></textarea>
+
+    <h4>Память</h4>
+    <div id="memList"></div>
+
+    <h4>Подключение</h4>
+    <label>URL воркера</label>
+    <input type="text" id="url" placeholder="https://имя.аккаунт.workers.dev">
+
+    <div class="actions">
+      <button class="light" id="clrChat" type="button">Очистить чат</button>
+      <button class="light" id="clrMem" type="button">Очистить память</button>
+    </div>
+  </div>
+</aside>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { alert("Не удалось сохранить: " + e.message); } };
+
+const DEFAULT_SYS = "Ты дружелюбный, живой собеседник. Отвечай по-русски, коротко и по делу.";
+
+const MEMORY_RULES =
+  "\n\nУ тебя есть долговременная память. Если пользователь рассказал что-то важное и долговечное " +
+  "(предпочтения, планы, факты о нём), запиши это, добавив в конец ответа тег " +
+  "[[mem: краткий факт]]. Можно несколько тегов. Не записывай мелочи и не дублируй уже известное. " +
+  "Тег пользователю не виден, не упоминай его.";
+
+let history = load("history", []);
+let memory  = load("memory", []);
+let cfg     = Object.assign(
+  { url: "", sys: DEFAULT_SYS, uName: "", uAge: "", uAv: "", bName: "", bAv: "" },
+  load("cfg", {})
+);
+
+/* ---------- аватарки ---------- */
+function setAv(el, img, name) {
+  if (img) { el.style.backgroundImage = "url(" + img + ")"; el.textContent = ""; }
+  else { el.style.backgroundImage = ""; el.textContent = (name || "?").trim().charAt(0).toUpperCase(); }
+}
+
+function fileToAvatar(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const fr = new FileReader();
+    fr.onload = () => { img.src = fr.result; };
+    fr.onerror = reject;
+    img.onload = () => {
+      const S = 128, c = document.createElement("canvas");
+      c.width = c.height = S;
+      const m = Math.min(img.width, img.height);
+      c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, S, S);
+      resolve(c.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+
+/* ---------- чат ---------- */
+function add(role, text) {
+  if (role === "sys") {
+    const s = document.createElement("div");
+    s.className = "sys"; s.textContent = text;
+    $("log").appendChild(s); $("log").scrollTop = 1e9;
+    return s;
+  }
+  const row = document.createElement("div");
+  row.className = "row " + role;
+  const av = document.createElement("div");
+  av.className = "av";
+  if (role === "user") setAv(av, cfg.uAv, cfg.uName || "Я");
+  else setAv(av, cfg.bAv, cfg.bName || "Б");
+  const msg = document.createElement("div");
+  msg.className = "msg"; msg.textContent = text;
+  row.append(av, msg);
+  $("log").appendChild(row); $("log").scrollTop = 1e9;
+  return msg;
+}
+
+function render() {
+  $("log").innerHTML = "";
+  history.forEach((m) => add(m.role === "user" ? "user" : "bot", m.content));
+  if (!cfg.url) add("sys", "Открой меню и вставь URL воркера.");
+  $("titleBot").textContent = cfg.bName || "Чат";
+}
+
+function buildMessages() {
+  let sys = cfg.sys || DEFAULT_SYS;
+  if (cfg.bName) sys += "\n\nТебя зовут " + cfg.bName + ".";
+  const who = [];
+  if (cfg.uName) who.push("Пользователя зовут " + cfg.uName + ".");
+  if (cfg.uAge) who.push("Ему/ей " + cfg.uAge + " лет.");
+  if (who.length) sys += "\n\n" + who.join(" ");
+  sys += MEMORY_RULES;
+  if (memory.length) sys += "\n\nТо, что ты помнишь о пользователе:\n- " + memory.join("\n- ");
+  return [{ role: "system", content: sys }, ...history.slice(-20)];
+}
+
+function extractMemory(text) {
+  const re = /\[\[\s*mem\s*:\s*([^\]]+?)\s*\]\]/gi;
+  let m, added = 0;
+  while ((m = re.exec(text))) {
+    const fact = m[1].trim();
+    if (fact && !memory.includes(fact)) { memory.push(fact); added++; }
+  }
+  if (added) { save("memory", memory); renderMem(); }
+  return { clean: text.replace(re, "").trim(), added };
+}
+
+async function send(text) {
+  if (!cfg.url) { openDrawer(); return; }
+  history.push({ role: "user", content: text });
+  add("user", text);
+  const wait = add("bot", "...");
+  $("send").disabled = true;
+  try {
+    const res = await fetch(cfg.url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messages: buildMessages() }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || "HTTP " + res.status);
+    const { clean, added } = extractMemory(data.reply || "");
+    const reply = clean || "(пустой ответ)";
+    history.push({ role: "assistant", content: reply });
+    save("history", history);
+    wait.textContent = reply;
+    if (added) add("sys", "Запомнил: " + added);
+  } catch (e) {
+    wait.parentElement.remove();
+    add("sys", "Ошибка: " + e.message);
+    history.pop();
+  } finally {
+    $("send").disabled = false;
+    $("log").scrollTop = 1e9;
+  }
+}
+
+$("form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const t = $("inp").value.trim();
+  if (!t) return;
+  $("inp").value = "";
+  send(t);
+});
+$("inp").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); $("form").requestSubmit(); }
+});
+
+/* ---------- меню ---------- */
+function openDrawer() { $("drawer").classList.add("on"); $("shade").classList.add("on"); }
+function closeDrawer() { $("drawer").classList.remove("on"); $("shade").classList.remove("on"); }
+$("burger").onclick = openDrawer;
+$("closeDrawer").onclick = closeDrawer;
+$("shade").onclick = closeDrawer;
+
+function fillForm() {
+  $("uName").value = cfg.uName; $("uAge").value = cfg.uAge;
+  $("bName").value = cfg.bName; $("bSys").value = cfg.sys; $("url").value = cfg.url;
+  setAv($("uAv"), cfg.uAv, cfg.uName || "Я");
+  setAv($("bAv"), cfg.bAv, cfg.bName || "Б");
+}
+
+function bind(id, key, after) {
+  $(id).addEventListener("input", () => {
+    cfg[key] = $(id).value.trim();
+    if (key === "sys" && !cfg.sys) cfg.sys = DEFAULT_SYS;
+    save("cfg", cfg);
+    if (after) after();
+  });
+}
+bind("uName", "uName", () => { setAv($("uAv"), cfg.uAv, cfg.uName || "Я"); render(); });
+bind("uAge", "uAge");
+bind("bName", "bName", () => { setAv($("bAv"), cfg.bAv, cfg.bName || "Б"); render(); });
+bind("bSys", "sys");
+bind("url", "url", () => render());
+
+async function pickAvatar(fileId, key, avId, name) {
+  const f = $(fileId).files[0];
+  if (!f) return;
+  try {
+    cfg[key] = await fileToAvatar(f);
+    save("cfg", cfg);
+    setAv($(avId), cfg[key], name());
+    render();
+  } catch { alert("Не получилось прочитать картинку"); }
+  $(fileId).value = "";
+}
+$("uFile").onchange = () => pickAvatar("uFile", "uAv", "uAv", () => cfg.uName || "Я");
+$("bFile").onchange = () => pickAvatar("bFile", "bAv", "bAv", () => cfg.bName || "Б");
+$("uDel").onclick = () => { cfg.uAv = ""; save("cfg", cfg); fillForm(); render(); };
+$("bDel").onclick = () => { cfg.bAv = ""; save("cfg", cfg); fillForm(); render(); };
+
+function renderMem() {
+  const box = $("memList");
+  box.innerHTML = memory.length ? "" : "<div class='empty'>Пока пусто.</div>";
+  memory.forEach((f, i) => {
+    const row = document.createElement("div");
+    row.className = "mem";
+    row.innerHTML = "<span></span><button type='button'>Удалить</button>";
+    row.firstChild.textContent = f;
+    row.lastChild.onclick = () => { memory.splice(i, 1); save("memory", memory); renderMem(); };
+    box.appendChild(row);
+  });
+}
+
+$("clrChat").onclick = () => { if (confirm("Очистить историю чата? Память останется.")) { history = []; save("history", history); render(); closeDrawer(); } };
+$("clrMem").onclick = () => { if (confirm("Стереть всю память?")) { memory = []; save("memory", memory); renderMem(); } };
+
+fillForm();
+renderMem();
+render();
+</script>
+</body>
+</html>
